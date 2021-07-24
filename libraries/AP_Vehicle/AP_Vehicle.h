@@ -244,6 +244,11 @@ public:
     AP_Frsky_Parameters frsky_parameters;
 #endif
 
+    /*
+      Returns the pan and tilt for use by onvif camera in scripting
+     */
+    virtual bool get_pan_tilt_norm(float &pan_norm, float &tilt_norm) const { return false; }
+
 protected:
 
     virtual void init_ardupilot() = 0;
@@ -293,11 +298,7 @@ protected:
     AP_Notify notify;
 
     // Inertial Navigation EKF
-#if AP_AHRS_NAVEKF_AVAILABLE
-    AP_AHRS_NavEKF ahrs;
-#else
-    AP_AHRS_DCM ahrs;
-#endif
+    AP_AHRS ahrs;
 
 #if HAL_HOTT_TELEM_ENABLED
     AP_Hott_Telem hott_telem;

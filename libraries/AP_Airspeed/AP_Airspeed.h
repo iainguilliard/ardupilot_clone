@@ -96,6 +96,11 @@ public:
     bool use(uint8_t i) const;
     bool use(void) const { return use(primary); }
 
+    // force disabling of all airspeed sensors
+    void force_disable_use(bool value) {
+        _force_disable_use = value;
+    }
+
     // return true if airspeed is enabled
     bool enabled(uint8_t i) const {
         if (i < AIRSPEED_MAX_SENSORS) {
@@ -140,6 +145,7 @@ public:
     enum OptionsMask {
         ON_FAILURE_AHRS_WIND_MAX_DO_DISABLE                   = (1<<0),   // If set then use airspeed failure check
         ON_FAILURE_AHRS_WIND_MAX_RECOVERY_DO_REENABLE         = (1<<1),   // If set then automatically enable the airspeed sensor use when healthy again.
+        DISABLE_VOLTAGE_CORRECTION                            = (1<<2),
     };
 
     enum airspeed_type {
@@ -200,6 +206,7 @@ private:
         AP_Int8  autocal;
         AP_Int8  tube_order;
         AP_Int8  skip_cal;
+        AP_Int32 bus_id;
     } param[AIRSPEED_MAX_SENSORS];
 
     struct airspeed_state {
@@ -234,7 +241,10 @@ private:
         } failures;
     } state[AIRSPEED_MAX_SENSORS];
 
-    bool calibration_enabled = false;
+    bool calibration_enabled;
+
+    // can be set to true to disable the use of the airspeed sensor
+    bool _force_disable_use;
 
     // current primary sensor
     uint8_t primary;

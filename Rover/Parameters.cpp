@@ -19,7 +19,6 @@ const AP_Param::Info Rover::var_info[] = {
     // @Param: LOG_BITMASK
     // @DisplayName: Log bitmask
     // @Description: Bitmap of what log types to enable in on-board logger. This value is made up of the sum of each of the log types you want to be saved. On boards supporting microSD cards or other large block-storage devices it is usually best just to enable all log types by setting this to 65535. The individual bits are ATTITUDE_FAST=1, ATTITUDE_MEDIUM=2, GPS=4, PerformanceMonitoring=8, ControlTuning=16, NavigationTuning=32, Mode=64, IMU=128, Commands=256, Battery=512, Compass=1024, TECS=2048, Camera=4096, RCandServo=8192, Rangefinder=16384, Arming=32768, FullLogs=65535
-    // @Values: 0:Disabled,65535:Default
     // @Bitmask: 0:ATTITUDE_FAST,1:ATTITUDE_MED,2:GPS,3:PM,4:THR,5:NTUN,7:IMU,8:CMD,9:CURRENT,10:RANGEFINDER,11:COMPASS,12:CAMERA,13:STEERING,14:RC,15:ARM/DISARM,19:IMU_RAW
     // @User: Advanced
     GSCALAR(log_bitmask,            "LOG_BITMASK",      DEFAULT_LOG_BITMASK),
@@ -71,7 +70,7 @@ const AP_Param::Info Rover::var_info[] = {
     // @Param: AUTO_TRIGGER_PIN
     // @DisplayName: Auto mode trigger pin
     // @Description: pin number to use to enable the throttle in auto mode. If set to -1 then don't use a trigger, otherwise this is a pin number which if held low in auto mode will enable the motor to run. If the switch is released while in AUTO then the motor will stop again. This can be used in combination with INITIAL_MODE to give a 'press button to start' rover with no receiver.
-    // @Values: -1:Disabled,0:APM TriggerPin0,1:APM TriggerPin1,2:APM TriggerPin2,3:APM TriggerPin3,4:APM TriggerPin4,5:APM TriggerPin5,6:APM TriggerPin6,7:APM TriggerPin7,8:APM TriggerPin8,50:Pixhawk TriggerPin50,51:Pixhawk TriggerPin51,52:Pixhawk TriggerPin52,53:Pixhawk TriggerPin53,54:Pixhawk TriggerPin54,55:Pixhawk TriggerPin55
+    // @Values: -1:Disabled,0:APM TriggerPin0,1:APM TriggerPin1,2:APM TriggerPin2,3:APM TriggerPin3,4:APM TriggerPin4,5:APM TriggerPin5,6:APM TriggerPin6,7:APM TriggerPin7,8:APM TriggerPin8,50:AUX1,51:AUX2,52:AUX3,53:AUX4,54:AUX5,55:AUX6
     // @User: Standard
     GSCALAR(auto_trigger_pin,        "AUTO_TRIGGER_PIN", -1),
 
@@ -344,7 +343,6 @@ const AP_Param::Info Rover::var_info[] = {
     // @Path: ../libraries/AP_GPS/AP_GPS.cpp
     GOBJECT(gps, "GPS", AP_GPS),
 
-#if AP_AHRS_NAVEKF_AVAILABLE
 #if HAL_NAVEKF2_AVAILABLE
     // @Group: EK2_
     // @Path: ../libraries/AP_NavEKF2/AP_NavEKF2.cpp
@@ -355,7 +353,6 @@ const AP_Param::Info Rover::var_info[] = {
     // @Group: EK3_
     // @Path: ../libraries/AP_NavEKF3/AP_NavEKF3.cpp
     GOBJECTN(ahrs.EKF3, NavEKF3, "EK3_", NavEKF3),
-#endif
 #endif
 
     // @Group: RPM
@@ -432,7 +429,7 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // 7 was used by AP_VisualOdometry
 
     // @Group: MOT_
-    // @Path: ../libraries/AP_Motors/AP_MotorsUGV.cpp
+    // @Path: ../libraries/AR_Motors/AP_MotorsUGV.cpp
     AP_SUBGROUPINFO(motors, "MOT_", 8, ParametersG2, AP_MotorsUGV),
 
     // @Group: WENC
@@ -651,6 +648,12 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("FS_OPTIONS", 48, ParametersG2, fs_options, 0),
 
+#if HAL_TORQEEDO_ENABLED
+    // @Group: TRQD_
+    // @Path: ../libraries/AP_Torqeedo/AP_Torqeedo.cpp
+    AP_SUBGROUPINFO(torqeedo, "TRQD_", 49, ParametersG2, AP_Torqeedo),
+#endif
+
     AP_GROUPEND
 };
 
@@ -692,7 +695,7 @@ ParametersG2::ParametersG2(void)
     beacon(rover.serial_manager),
     motors(rover.ServoRelayEvents, wheel_rate_control),
     wheel_rate_control(wheel_encoder),
-    attitude_control(rover.ahrs),
+    attitude_control(),
     smart_rtl(),
 #if HAL_PROXIMITY_ENABLED
     proximity(),

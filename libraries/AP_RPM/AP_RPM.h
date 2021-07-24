@@ -42,6 +42,7 @@ public:
         RPM_TYPE_PIN     = 2,
         RPM_TYPE_EFI     = 3,
         RPM_TYPE_HNTCH   = 4,
+        RPM_TYPE_ESC_TELEM  = 5,
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
         RPM_TYPE_SITL   = 10,
 #endif
@@ -62,6 +63,7 @@ public:
     AP_Float _maximum[RPM_MAX_INSTANCES];
     AP_Float _minimum[RPM_MAX_INSTANCES];
     AP_Float _quality_min[RPM_MAX_INSTANCES];
+    AP_Int32 _esc_mask[RPM_MAX_INSTANCES];
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -93,6 +95,9 @@ public:
     bool enabled(uint8_t instance) const;
 
     static AP_RPM *get_singleton() { return _singleton; }
+
+    // check settings are valid
+    bool arming_checks(size_t buflen, char *buffer) const;
 
 private:
     static AP_RPM *_singleton;

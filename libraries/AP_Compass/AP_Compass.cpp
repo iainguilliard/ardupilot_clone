@@ -163,7 +163,7 @@ const AP_Param::GroupInfo Compass::var_info[] = {
 
     // @Param: EXTERNAL
     // @DisplayName: Compass is attached via an external cable
-    // @Description: Configure compass so it is attached externally. This is auto-detected on PX4 and Pixhawk. Set to 1 if the compass is externally connected. When externally connected the COMPASS_ORIENT option operates independently of the AHRS_ORIENTATION board orientation option. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
+    // @Description: Configure compass so it is attached externally. This is auto-detected on most boards. Set to 1 if the compass is externally connected. When externally connected the COMPASS_ORIENT option operates independently of the AHRS_ORIENTATION board orientation option. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
     // @Values: 0:Internal,1:External,2:ForcedExternal
     // @User: Advanced
     AP_GROUPINFO("EXTERNAL", 9, Compass, _state._priv_instance[0].external, 0),
@@ -323,7 +323,7 @@ const AP_Param::GroupInfo Compass::var_info[] = {
 
     // @Param: EXTERN2
     // @DisplayName: Compass2 is attached via an external cable
-    // @Description: Configure second compass so it is attached externally. This is auto-detected on PX4 and Pixhawk. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
+    // @Description: Configure second compass so it is attached externally. This is auto-detected on most boards. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
     // @Values: 0:Internal,1:External,2:ForcedExternal
     // @User: Advanced
     AP_GROUPINFO("EXTERN2",20, Compass, _state._priv_instance[1].external, 0),
@@ -346,7 +346,7 @@ const AP_Param::GroupInfo Compass::var_info[] = {
 
     // @Param: EXTERN3
     // @DisplayName: Compass3 is attached via an external cable
-    // @Description: Configure third compass so it is attached externally. This is auto-detected on PX4 and Pixhawk. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
+    // @Description: Configure third compass so it is attached externally. This is auto-detected on most boards. If set to 0 or 1 then auto-detection by bus connection can override the value. If set to 2 then auto-detection will be disabled.
     // @Values: 0:Internal,1:External,2:ForcedExternal
     // @User: Advanced
     AP_GROUPINFO("EXTERN3",23, Compass, _state._priv_instance[2].external, 0),
@@ -1149,6 +1149,18 @@ void Compass::_probe_external_i2c_compasses(void)
     }
     FOREACH_I2C_INTERNAL(i) {
         ADD_BACKEND(DRIVER_IST8308, AP_Compass_IST8308::probe(GET_I2C_DEVICE(i, HAL_COMPASS_IST8308_I2C_ADDR),
+                    all_external, ROTATION_NONE));
+    }
+#endif
+
+#if !defined(HAL_DISABLE_I2C_MAGS_BY_DEFAULT) || defined(HAL_USE_I2C_MAG_MMC3416)
+    // external i2c bus
+    FOREACH_I2C_EXTERNAL(i) {
+        ADD_BACKEND(DRIVER_MMC3416, AP_Compass_MMC3416::probe(GET_I2C_DEVICE(i, HAL_COMPASS_MMC3416_I2C_ADDR),
+                    true, ROTATION_NONE));
+    }
+    FOREACH_I2C_INTERNAL(i) {
+        ADD_BACKEND(DRIVER_MMC3416, AP_Compass_MMC3416::probe(GET_I2C_DEVICE(i, HAL_COMPASS_MMC3416_I2C_ADDR),
                     all_external, ROTATION_NONE));
     }
 #endif

@@ -196,6 +196,7 @@ public:
         FBWA_TAILDRAGGER =    95, // enables FBWA taildragger takeoff mode. Once this feature is enabled it will stay enabled until the aircraft goes above TKOFF_TDRAG_SPD1 airspeed, changes mode, or the pitch goes above the initial pitch when this is engaged or goes below 0 pitch. When enabled the elevator will be forced to TKOFF_TDRAG_ELEV. This option allows for easier takeoffs on taildraggers in FBWA mode, and also makes it easier to test auto-takeoff steering handling in FBWA.
         MODE_SWITCH_RESET =   96, // trigger re-reading of mode switch
         WIND_VANE_DIR_OFSSET= 97, // flag for windvane direction offset input, used with windvane type 2
+        TRAINING            = 98, // mode training
 
         // entries from 100 onwards are expected to be developer
         // options used for testing
@@ -205,6 +206,7 @@ public:
         EKF_LANE_SWITCH =    103, // trigger lane switch attempt
         EKF_YAW_RESET =      104, // trigger yaw reset attempt
         GPS_DISABLE_YAW =    105, // disable GPS yaw for testing
+        DISABLE_AIRSPEED_USE = 106, // equivalent to AIRSPEED_USE 0
         // if you add something here, make sure to update the documentation of the parameter in RC_Channel.cpp!
         // also, if you add an option >255, you will need to fix duplicate_options_exist
 
@@ -398,6 +400,7 @@ public:
 
     static uint8_t get_valid_channel_count(void);                      // returns the number of valid channels in the last read
     static int16_t get_receiver_rssi(void);                            // returns [0, 255] for receiver RSSI (0 is no link) if present, otherwise -1
+    static int16_t get_receiver_link_quality(void);                         // returns 0-100 % of last 100 packets received at receiver are valid
     bool read_input(void);                                             // returns true if new input has been read in
     static void clear_overrides(void);                                 // clears any active overrides
     static bool receiver_bind(const int dsmMode);                      // puts the receiver in bind mode if present, returns true if success
@@ -472,6 +475,11 @@ public:
         return _options & uint32_t(Option::ARMING_SKIP_CHECK_RPY);
     }
 
+    bool suppress_crsf_message(void) const {
+        return get_singleton() != nullptr && (_options & uint32_t(Option::SUPPRESS_CRSF_MESSAGE));
+    }
+
+
 
     // returns true if overrides should time out.  If true is returned
     // then returned_timeout_ms will contain the timeout in
@@ -511,6 +519,13 @@ public:
         return rc_channel(0)->run_aux_function(ch_option, pos, source);
     }
 
+    // check if flight mode channel is assigned RC option
+    // return true if assigned
+    bool flight_mode_channel_conflicts_with_rc_option() const;
+
+    // flight_mode_channel_number must be overridden in vehicle specific code
+    virtual int8_t flight_mode_channel_number() const = 0;
+
 protected:
 
     enum class Option {
@@ -523,6 +538,7 @@ protected:
         ARMING_SKIP_CHECK_RPY   = (1U << 6), // skip the an arming checks for the roll/pitch/yaw channels
         ALLOW_SWITCH_REV        = (1U << 7), // honor the reversed flag on switches
         CRSF_CUSTOM_TELEMETRY   = (1U << 8), // use passthrough data for crsf telemetry
+        SUPPRESS_CRSF_MESSAGE   = (1U << 9), // suppress CRSF mode/rate message for ELRS systems
     };
 
     void new_override_received() {
@@ -542,9 +558,7 @@ private:
     AP_Int32  _options;
     AP_Int32  _protocols;
 
-    // flight_mode_channel_number must be overridden in vehicle specific code
-    virtual int8_t flight_mode_channel_number() const = 0;
-    RC_Channel *flight_mode_channel();
+    RC_Channel *flight_mode_channel() const;
 
     // Allow override by default at start
     bool _gcs_overrides_enabled = true;

@@ -1,4 +1,37 @@
 Rover Release Notes:
+------------------------------------------------------------------
+Rover 4.1.0-beta6 23-Jul-2021
+Changes from 4.1.0-beta5
+1) Enhancements
+    a) GPS-for-yaw enhancements including using position and yaw from different GPSs 
+    b) Long distance travel supported (thousands of km) including double precision EKF and moving origin
+2) Bug Fixes
+    a) BendyRuler avoidance fixed (was slow and jerky)
+    b) BLHeli fix that could cause failure to boot
+    c) CRSF message spamming and firmware string length fixed
+    d) Display re-enabled on 1MB boards
+    e) DShot always sends 0 when disarmed (protects against motors spin while disarmed due to misconfiguration)
+    f) DShot fix that could cause main loop jitter
+    g) DShot buzzer tone disabled during motor test to remove bad interation
+    h) Longitude wrap fix (allows autonomous flights as longitude wraps between -180 and 180 deg)
+    i) Log created on forced arm
+    j) MatekF405-bdshot NeoPixel LEDs re-enabled on PWM5
+    k) Serial port performance improvements using FIFO on H7 boards
+--------------------------------
+Rover 4.1.0-beta5 30-Jun-2021
+Changes from 4.1.0-beta4
+1) Enhancements
+    a) Arming check of distance from EKF origin increased to 250km horizontally (was 50km), 50km vertically (was 500m)
+    b) Pre-arm check of FLTMODE_CH and RCx_OPTION conflict
+    c) QioTekZealotH743 autopilot support
+    d) Scripting support for set home and get EKF origin
+    e) Water depth and temperature sent to GCS using WATER_DEPTH mavlink message
+2) Bug fixes
+    a) EKF alt estimate more robust when using GPS-for-yaw
+    b) EKF origin altitudes consistent across cores even if user takes off with no GPS lock
+    c) Logging start does not affect EKF (EKF could become unhealthy due to timing delays)
+    d) Longitude wrap fixed (allows flying across international date line)
+    e) Position jump fixed during GPS glitch and GPS/Non-GPS transitions
 --------------------------------
 Rover 4.1.0-beta4 12-Jun-2021
 Changes from 4.1.0-beta3
